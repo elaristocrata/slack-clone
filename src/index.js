@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App';
 import registerServiceWorker from './registerServiceWorker';
+import Spinner from "./Spinner";
 import 'semantic-ui-css/semantic.min.css'
 import {BrowserRouter as Router, Switch, Route, withRouter} from "react-router-dom";
 import Login from "./Auth/login";
@@ -12,10 +13,12 @@ import {Provider, connect} from 'react-redux'
 import {composeWithDevTools} from "redux-devtools-extension";
 import rootReducer from "./reducers";
 import {setUser} from "./actions";
+import mapStateToProps from "react-redux/lib/connect/mapStateToProps";
 
 const store =createStore(rootReducer, composeWithDevTools());
 class Root extends React.Component {
     componentDidMount() {
+        console.log(this.props.isLoading)
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 this.props.setUser(user);
@@ -25,7 +28,7 @@ class Root extends React.Component {
     }
 
     render() {
-        return (
+        return this.props.isLoading ? <Spinner/>:(
             <Switch>
                 <Route exact path="/" component={App}/>
                 <Route path="/login" component={Login}/>
@@ -36,7 +39,10 @@ class Root extends React.Component {
     }
 }
 
-const RootWhitAuth = withRouter(connect(null,{setUser})(Root));
+const mapStateFromProps = state => ({
+isLoading: state.user.isLoading
+})
+const RootWhitAuth = withRouter(connect(mapStateFromProps,{setUser})(Root));
 ReactDOM.render(
     <Provider store={store}>
     <Router>
